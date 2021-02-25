@@ -39,8 +39,8 @@ DEBUG = -O2 -g -DQCL_DEBUG -DQC_DEBUG
 #
 # Comment out if you don't have GNU libplotter and X
 
-PLOPT = -DQCL_PLOT
-PLLIB = -L/usr/X11/lib -lplotter
+#PLOPT = -DQCL_PLOT
+#PLLIB = -L/usr/X11/lib -lplotter
 
 # Readline support
 #
@@ -48,8 +48,8 @@ PLLIB = -L/usr/X11/lib -lplotter
 # explicit linking against libtermcap or libncurses may be required
 
 RLOPT = -DQCL_USE_READLINE
-#RLLIB = -lreadline
-RLLIB = -lreadline -lncurses
+RLLIB = -lreadline
+#RLLIB = -lreadline -lncurses
 
 # Interrupt support
 #
