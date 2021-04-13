@@ -124,7 +124,8 @@ $(QCLIB):
 
 #### Rules for build
 
-build: qcl $(QCLINC)/default.qcl
+#build: qcl $(QCLINC)/default.qcl
+build: qcl $(QCLINC)/my.qcl
 
 qcl: $(OBJECTS) qcl.o $(QCLIB)
 	$(CXX) $(OBJECTS) qcl.o $(LDFLAGS) -o qcl
