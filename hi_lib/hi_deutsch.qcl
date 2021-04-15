@@ -76,8 +76,12 @@ procedure deutsch() {              // Classical control structure
   Uf(x, y);
   H(x);
 
+  dump x;
+  dump y;
   measure x, m;
   printMeasuredResult(m);
+  dump;
+
 
   reset;
 }
