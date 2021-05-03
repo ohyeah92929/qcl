@@ -1,5 +1,26 @@
-/* Define Oracle */
+//------------------------------------------------------------------------
+// Deutsch-Jozsa Algorithm
+//          n                 n
+//   x |0>  --/--|Hn|----|    |--/--|Hn|----(/)
+//                       | Uf |
+//   y |1>  -----|H|-----|    |--
+//
+//
+//   Uf is the arbitrary function that maps n input qbits to an output 0/1
+//   Uf guarantees that outputs will be either constant or balanced.
+//   Constant means all inputs are mapped to all zeros or ones.
+//   Balanced means half of the inputs are mapped to zeros and the rest to ones.
+//
+//   Implemented Uf does not implement all balanced scenarios
+//   but represents some of the balanced scenarios.
+//
+//   The result only cares about |00...0> amplitude of the top n qubits.
+//   Constant should always measure |00..0> (the amplitude is always 1)
+//------------------------------------------------------------------------
 
+//------------------------------------------------------------------------
+// Define Oracle
+//------------------------------------------------------------------------
 const fzero=(random()>=0.5);       // Zero or Ones for the Uf result 
 const bal=(random()>=0.5);         // Balanced or Constant
 const Nmax = 22;                   // This value is decided empirically.
@@ -7,9 +28,18 @@ const Nmax = 22;                   // This value is decided empirically.
 const N = ceil(random()*Nmax);     // A random N within Nmax
 const Nrand = ceil(random()*N);    // A random qubit to CNot with y
 
+operator Uf(qureg x,qureg y) {
 
-/* Extra print procedures */
+  if fzero  { Not(y); }
+  if bal    { CNot(y,x[Nrand]); }   // Applying CNot to only one of the x qubit 
+                                    // guarantees that the output will be 0 
+                                    // in half of the times and 1 in the rest.
+}
 
+
+//------------------------------------------------------------------------
+// Extra print procedures
+//------------------------------------------------------------------------
 procedure printExpectedResult() {
   print "N = ", N;
   print "Nrand = ", Nrand;
@@ -31,33 +61,9 @@ procedure printResults(int m) {
 }
 
 
-/* Deutsch-Jozsa Algorithm */
-/*          n                 n
- *   x |0>  --/--|Hn|----|    |--/--|Hn|----(/)
- *                       | Uf |
- *   y |1>  -----|H|-----|    |--
- *
- *
- *   Uf is the arbitrary function that maps n input qbits to an output 0/1
- *   Uf guarantees that outputs will be either constant or balanced.
- *   Constant means all inputs are mapped to all zeros or ones.
- *   Balanced means half of the inputs are mapped to zeros and the rest to ones.
- *
- *   Implemented Uf does not implement all balanced scenarios
- *   but represents some of the balanced scenarios.
- *
- *   The result only cares about |00...0> amplitude of the top n qubits.
- *   Constant should always measure |00..0> (the amplitude is always 1)
- */
-
-operator Uf(qureg x,qureg y) {
-
-  if fzero  { Not(y); }
-  if bal    { CNot(y,x[Nrand]); }   // Applying CNot to only one of the x qubit 
-                                    // guarantees that the output will be 0 
-                                    // in half of the times and 1 in the rest.
-}
-
+//------------------------------------------------------------------------
+// Entire Deutsch-Jozsa
+//------------------------------------------------------------------------
 procedure DeutschJozsa() {              // Classical control structure
   qureg x[N];                   // allocate N qubits
   qureg y[1];
