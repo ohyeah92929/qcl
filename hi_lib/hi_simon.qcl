@@ -1,0 +1,116 @@
+//------------------------------------------------------------------------
+// Simon's Algorithm:
+//  There is a secret string c, that f(x)=f(y) if and only if x=(y xor c).
+//  Simon's algorithm is to determin c.
+//
+//  Quantum part:
+//           n        n          n        n
+//  x |0>  --/--|Hn|--/--|    |--/--|Hn|--/--(/)
+//               n       | Uf |       n
+//  y |0>  ------/-------|    |-------/-------
+//
+//  This will measure n/2 zs that satisfies <z,c> = 0.
+//
+//  Classical part:
+//  The classical part will take measured zs and solve linear equations.
+//  That will give the answer c.
+//------------------------------------------------------------------------
+
+//------------------------------------------------------------------------
+// Define Oracle
+//------------------------------------------------------------------------
+const Nmax = 8;//22;                   // This value is decided empirically.
+                                   // Nmax takes approx 30s to calculate in my laptop.
+const N = ceil(random()*Nmax);     // A random N within Nmax
+const c = ceil(random()*(2^N-1));
+
+// The purpose of this oracle is to create (2^N)/2 different outputs.
+// (Not 2^N, or c=0, because the algorithm assumes c!=0. 
+// f(x)=f(x+c) is the key to create cancellations and reduce the possible 
+// numbers of measurement. If c=0, there will be no cancellation and 
+// need 2^(N-1) operations to determine that c=0. 
+// This is no better than pure classical algorithm.)
+//
+// CNOT gate is chosen to create (2^N)/(2^k) different outputs (0<=k<=N).
+// CNOT gates should be connected to at least N-1 different control qubits
+// and connected to at least N-1 different target qubits to make k=0 or k=1.
+// To limit k to 1, CNOT can't connect both N different controls and targets.
+// (The case where all targets are connected to all controls is an exception.
+// This means there are N^2 CNOTs is an exception.)
+// For simplicity, there will be N-1 control qubits connected to N-1 targets.
+// And they are connected in order.
+//
+// Future improvements: Build an oracle that knows c already.
+const excludeIdx = ceil(random()*N);  // choose idx that will get excluded
+operator Uf(qureg x,qureg y) {
+  int i;
+  int idx=0;
+
+  for i=0 to N-2 {
+    if (excludeIdx == idx) { idx = idx+1; }
+
+    print "idx = ", idx;
+    CNot(y[idx], x[idx]);
+
+    idx = idx+1;
+  }
+}
+
+
+//------------------------------------------------------------------------
+// Extra print procedures
+//------------------------------------------------------------------------
+procedure printOracleInfo() {
+  print "qubit number N = ", N;
+  print "excluded idx = ", excludeIdx;
+}
+
+procedure printResults(int c) {
+  print "calculated c = ", c;
+}
+
+
+
+//------------------------------------------------------------------------
+// Calculate linear algebra
+//------------------------------------------------------------------------
+int solveC(int vector z) {
+  int i;
+  for i=0 to #z {print z[i];}
+
+  return 0;
+}
+
+//------------------------------------------------------------------------
+// Entire Simon
+//------------------------------------------------------------------------
+procedure Simon() {              // Classical control structure
+  qureg x[N];                   // allocate N qubits
+  qureg y[N];
+  int vector z[N];
+  int c;
+  int m;
+  int i;
+
+  printOracleInfo();
+
+  // Quantum part
+  for i=0 to N-1 {
+    reset;
+    H(x);
+    Uf(x, y);
+    H(x);
+  
+//    dump x; // debug purpose
+//    dump y;
+    measure x, m;
+    print "m = ", m;
+  }
+  reset;
+
+  // Classical part
+  solveC(z);
+//  printResults(z);
+
+}
+
