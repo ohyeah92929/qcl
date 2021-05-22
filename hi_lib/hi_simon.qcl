@@ -21,7 +21,7 @@
 //------------------------------------------------------------------------
 const Nmax = 8;//22;                   // This value is decided empirically.
                                    // Nmax takes approx 30s to calculate in my laptop.
-const N = ceil(random()*Nmax);     // A random N within Nmax
+const N = ceil(random()*Nmax) + 2;     // A random N within Nmax. At least 2
 const c = ceil(random()*(2^N-1));
 
 // The purpose of this oracle is to create (2^N)/2 different outputs.
@@ -49,7 +49,6 @@ operator Uf(qureg x,qureg y) {
   for i=0 to N-2 {
     if (excludeIdx == idx) { idx = idx+1; }
 
-    print "idx = ", idx;
     CNot(y[idx], x[idx]);
 
     idx = idx+1;
@@ -74,28 +73,56 @@ procedure printResults(int c) {
 //------------------------------------------------------------------------
 // Calculate linear algebra
 //------------------------------------------------------------------------
-int solveC(int vector z) {
+/*
+procedure solveC(int vector z) {
   int i;
-  for i=0 to #z {print z[i];}
+  int j;
+  int k;
+  int swap;
+  int tmp1;
+  int tmp2;
+  int vector int vector zz[N+1];
+  int vector groupZ[N];
+  int vector groupO[N];
 
-  return 0;
+  print "Input z:";
+  for i=0 to #z-1 {print z[i];}
+
+  for i=0 to #z-1 {
+    for j=0 to #z-1 {
+      tmp1 = z[j] / 2^i;
+      tmp1 = tmp1 mod 2;
+        if tmp == 1 {
+          for k=j to #z-1
+          {
+          }
+        }
+      }
+    }
+  }
+
+  for i=0 to #z-1 {print z[i];}
+
 }
-
+*/
 //------------------------------------------------------------------------
 // Entire Simon
 //------------------------------------------------------------------------
 procedure Simon() {              // Classical control structure
   qureg x[N];                   // allocate N qubits
   qureg y[N];
-  int vector z[N];
-  int c;
+  int vector z[N+1];
+  int c; // secret string
   int m;
   int i;
+  int j;
+  int skip = 0;
+  int zidx = 0;
 
   printOracleInfo();
 
   // Quantum part
-  for i=0 to N-1 {
+  for i=0 to 3*N { // assume that you'll measure N different result in 3*N times
     reset;
     H(x);
     Uf(x, y);
@@ -104,12 +131,27 @@ procedure Simon() {              // Classical control structure
 //    dump x; // debug purpose
 //    dump y;
     measure x, m;
-    print "m = ", m;
+//    print "m = ", m;
+    if m == 0 { skip = 1; }
+    for j=0 to zidx {
+      if i == 0 { break; }
+      if m == z[j] { 
+        skip = 1;
+        break;
+      }
+    }
+    if skip == 0 { z[zidx] = m; zidx = zidx+1; }
+    skip = 0; // reset skip
+
+    if zidx == #z { break; } // stop when Z is full
   }
   reset;
 
+  // print out the measurement collection
+  for i=0 to #z-1 {print z[i];}
+
   // Classical part
-  solveC(z);
+//  solveC(z);
 //  printResults(z);
 
 }
