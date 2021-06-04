@@ -175,8 +175,8 @@ dist-bin: build
 	tar czf qcl-$(VERSION)-$(ARCH).tgz --owner=0 --group=0 qcl-$(VERSION)-$(ARCH)
 	rm -r qcl-$(VERSION)-$(ARCH)
 
-upload: dist-src
-	scp qcl-$(VERSION)*.tgz oemer@tph.tuwien.ac.at:html/tgz
-
-scp: dist-src
-	scp qcl-$(VERSION).tgz oemer@tph.tuwien.ac.at:bak/qcl-$(DATE).tgz
+#upload: dist-src
+#	scp qcl-$(VERSION)*.tgz oemer@tph.tuwien.ac.at:html/tgz
+#
+#scp: dist-src
+#	scp qcl-$(VERSION).tgz oemer@tph.tuwien.ac.at:bak/qcl-$(DATE).tgz
