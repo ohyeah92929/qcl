@@ -1,0 +1,128 @@
+//------------------------------------------------------------------------
+// Grover's Algorithm:
+//  Find x0 where f(x)=0 (x!=x0), f(x)=1 (x=x0) and there is only one x0.
+//  Grover's algorithm is a search algorithm for unsorted array.
+//
+//  Quantum part:
+//  1) Phase inversion
+//            n           n
+//    |x>  ---/---|    |--/--(/)
+//                | Uf |       
+//  y |1>  --|H|--|    |------
+//   
+//  2) Inversion about the average
+//            n           n
+//    |x>  ---/---|2A-I|--/--(/)
+//
+//    A = ((1/n,1/n...1/n), (1/n,1/n...1/n), ... (1/n,1/n...1/n))
+//        (n = # of elements)
+//    A averages elements. AV = [a,a,a,...,a] (a=average)
+//
+//  3) Repeat 1) and 2) for n^0.5 times.
+//    Repeating for more than n^0.5 times can overcook the result.
+//
+//  --Entire quantum circuit--
+//                 repeat n times
+//                 --------------------------------------
+//                 | --------------------------     --------------              |
+//                 | | Oracle/Phase Inversion |     | Diffusion/            |
+//                 | |                        |     | Inversion about mean                |
+//                 | |                        |     |                 |
+//         n       | |       n                |  n  |                 |  n
+//  x |0>--/--|Hn|-|-|-------/-------|    |---|--/--|----|2A-I|-----|--/--(/)
+//                 | |               | Uf |   |     |               |
+//                 | | y  |1>---|H|--|    |-- |     |               |
+//                 | --------------------------     ------------  |
+//                 --------------------------------------------
+//
+//  This algorithm can shown easily with an example bar graph.
+//------------------------------------------------------------------------
+
+//------------------------------------------------------------------------
+// Define Oracle
+//------------------------------------------------------------------------
+const Nmax = 16;                   // This value is decided empirically.
+                                   // Nmax takes approx 30s to calculate in my laptop.
+const N = ceil(random()*Nmax);     // A random N within Nmax.
+const answer = ceil(random()*(2^N-1));  // A number to find
+
+// The purpose of this oracle is to select x that f(x)=1
+operator Uf(qureg x, qureg y) {
+  int i;
+  int answerTmp = answer;
+
+  for i=0 to N-1 {
+    if (answerTmp mod 2 == 0) { Not(x[i]); }
+    answerTmp = answerTmp / 2;
+  }
+
+  CNot(y, x);
+
+  answerTmp = answer;
+  for i=0 to N-1 {
+    if (answerTmp mod 2 == 0) { !Not(x[i]); }
+
+    answerTmp = answerTmp / 2;
+  }
+}
+
+
+//------------------------------------------------------------------------
+// Diffuse / Inversion about mean
+//------------------------------------------------------------------------
+operator D(qureg x) {
+  H(x);
+  Not(x);
+  CPhase(pi,x);
+  Not(x);
+  H(x);
+}
+
+
+//------------------------------------------------------------------------
+// Extra print procedures
+//------------------------------------------------------------------------
+procedure printOracleInfo() {
+  print "qubit number N = ", N;
+  print "answer = ", answer;
+}
+
+
+//------------------------------------------------------------------------
+// Entire Grover 
+//------------------------------------------------------------------------
+procedure Grover() {              // Classical control structure
+  qureg x[N];                   // allocate N qubits
+  qureg y[1];
+  int m;
+  int i;
+  int trialno=0;
+
+  printOracleInfo();
+
+  {
+    print;
+    reset;
+    H(x);
+    for i=0 to floor(sqrt(2^N)) {
+      print "i = ", i;
+  
+      // Phase inversion
+      Not(y);
+      H(y);
+      Uf(x, y);
+      CPhase(pi,y);
+      !Uf(x, y);
+  
+      // Inversion about mean
+      D(x);
+    }
+    measure x, m;
+
+    dump;
+    trialno = trialno+1;
+    print "trial", trialno, "measured value =", m;
+  }until m==answer;
+
+}
+
